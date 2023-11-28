@@ -1,0 +1,67 @@
+Arguments: 
+  /Users/xander/.nvm/versions/node/v16.20.0/bin/node /Users/xander/.yarn/bin/yarn.js install
+
+PATH: 
+  /Users/xander/Library/pnpm:/Users/xander/.nvm/versions/node/v16.20.0/bin:/Users/xander/.yarn/bin:/Users/xander/.config/yarn/global/node_modules/.bin:/Users/xander/.local/share/solana/install/active_release/bin:/Users/xander/.cargo/bin:/Users/xander/opt/anaconda3/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/Users/xander/Documents/school/nand2tetris/tools
+
+Yarn version: 
+  1.22.19
+
+Node version: 
+  16.20.0
+
+Platform: 
+  darwin arm64
+
+Trace: 
+  Error: https://registry.yarnpkg.com/@ccamp%2fcontracts: Not found
+      at Request.params.callback [as _callback] (/Users/xander/.yarn/lib/cli.js:66145:18)
+      at Request.self.callback (/Users/xander/.yarn/lib/cli.js:140890:22)
+      at Request.emit (node:events:513:28)
+      at Request.<anonymous> (/Users/xander/.yarn/lib/cli.js:141862:10)
+      at Request.emit (node:events:513:28)
+      at IncomingMessage.<anonymous> (/Users/xander/.yarn/lib/cli.js:141784:12)
+      at Object.onceWrapper (node:events:627:28)
+      at IncomingMessage.emit (node:events:525:35)
+      at endReadableNT (node:internal/streams/readable:1358:12)
+      at processTicksAndRejections (node:internal/process/task_queues:83:21)
+
+npm manifest: 
+  {
+    "name": "@ccamp/indexer",
+    "version": "1.0.0",
+    "description": "",
+    "main": "index.js",
+    "scripts": {
+      "test": "echo \"Error: no test specified\" && exit 1",
+      "clean": "",
+      "dev": "ts-node -r tsconfig-paths/register src/index.ts",
+      "build": "ttsc",
+      "start": "npm run build && node ./dist/index.js",
+      "setup": "./setup.sh"
+    },
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+      "dotenv": "^16.3.1",
+      "ethers": "^6.8.1",
+      "pg": "^8.11.3",
+      "web3-eth-abi": "^4.1.4",
+      "@ccamp/contracts": "*"
+    },
+    "devDependencies": {
+      "typescript": "<4.8",
+      "ts-transformer-imports": "^0.4.3",
+      "@types/pg": "^8.10.9",
+      "npm": "^10.2.4",
+      "tsconfig-paths": "^4.2.0",
+      "ttypescript": "^1.5.15",
+      "typescript-transform-paths": "^3.4.6"
+    }
+  }
+
+yarn manifest: 
+  No manifest
+
+Lockfile: 
+  No lockfile
