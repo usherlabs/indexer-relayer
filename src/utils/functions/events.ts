@@ -1,5 +1,4 @@
 import { DBEventPayload, LogStorePayloadType } from "@/types";
-import { DeployedAddressType } from "@/types/contract";
 import { TransactionReceiptParams } from "ethers";
 
 import environment from "../../config/env";
