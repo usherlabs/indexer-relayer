@@ -5,28 +5,33 @@ import {
   LogStorePayloadType,
   NotificationResponseMessage,
 } from "@/types";
+import { CACHE_SUFFIXES } from "@/utils/constants";
 import { parseTransactionReciept } from "@/utils/functions/events";
 import {
   buildBlockNumberQuery,
   CREATE_TRIGGER_QUERY,
   LISTEN_TO_TRIGGER_QUERY,
 } from "@/utils/queries";
-import LogStoreClient from "@logsn/client";
+import CCAMPClient, { ProtocolDataCollectionCanister } from "@ccamp/lib";
+import LogStoreClient, { MessageMetadata } from "@logsn/client";
 import { Client as DBClient, QueryResult } from "pg";
 import { createClient } from "redis";
 
 export class PostgresHelper {
   private _db: DBClient;
   private _logstoreClient: LogStoreClient;
+  public _ccampClient: CCAMPClient;
   private _cache;
 
   constructor(connectionString: string, evmPrivateKey: string) {
     this._db = new DBClient(connectionString);
     this._cache = createClient();
+    this._ccampClient = new CCAMPClient(evmPrivateKey);
     this._logstoreClient = new LogStoreClient({
       auth: { privateKey: evmPrivateKey },
     });
 
+    // connect to the db and cache
     this._db.connect();
     this._cache.connect();
   }
@@ -37,6 +42,7 @@ export class PostgresHelper {
   }
 
   public async listen() {
+    // add notify listeners to relevant 
     await this._db.query(CREATE_TRIGGER_QUERY);
     await this._db.query(LISTEN_TO_TRIGGER_QUERY);
 
@@ -48,7 +54,7 @@ export class PostgresHelper {
     // listen for broadcasts over the validation stream
     this._logstoreClient.subscribe(
       environment.topicStream,
-      this._handleNewValidationData
+      this._handleNewValidationData.bind(this)
     );
 
     this.log("Listening for inserts into the postgres database");
@@ -81,45 +87,92 @@ export class PostgresHelper {
     return this._db.query(queryString);
   }
 
-  private async _handleNewIndex(data: NotificationResponseMessage) {
+  public async _handleNewIndex(data: NotificationResponseMessage) {
     try {
       const { payload } = data;
-      const client = this as PostgresHelper;
 
-      client.log(`Recieved a payload of :${JSON.stringify(data)}`);
-
+      this.log(`Recieved a payload of :${JSON.stringify(data)}`);
       const eventPayload = JSON.parse(payload) as DBEventPayload;
-      const blockDetails = await client.getBlockByNumber(eventPayload.block$);
-
+      const blockDetails = await this.getBlockByNumber(eventPayload.block$);
       const parsedTxnPayload = await parseTransactionReciept(
         eventPayload,
         blockDetails.data.transaction_receipts
       );
 
       // push to logstore
-      await this._publishDataToLogstore(parsedTxnPayload);
+      this.log("Publishing payload to logstore");
+      const signedPayload = await this._publishDataToLogstore(parsedTxnPayload);
 
       // add to cache
-      const key = await this._generateCacheKeyFromPayload(parsedTxnPayload);
-      const value = await this._signPayload(parsedTxnPayload);
-      await this._cache.set(key, JSON.stringify(value));
+      this.log("Caching data in storage");
+      const key = this._generateCacheKeyFromPayload(
+        signedPayload.content as LogStorePayloadType,
+        CACHE_SUFFIXES.SOURCE_EVENT
+      );
+      await this._cache.set(key, JSON.stringify(signedPayload));
+
+      return signedPayload;
     } catch (err) {
       console.log(`There was an error:${err.message}`);
       console.log(err);
     }
   }
 
-  private async _handleNewValidationData(data: unknown) {
-    // get the corresponding data from the cache
-    // if it exists push both the initial data and the validation to the ccamp network
+  private async _handleNewValidationData(
+    content: LogStorePayloadType,
+    metadata: MessageMetadata
+  ) {
+    const payload = { content, metadata };
+    const validatedItemsKey = this._generateCacheKeyFromPayload(
+      content,
+      CACHE_SUFFIXES.VALIDATOR_EVENT
+    );
+    const sourceItemKey = this._generateCacheKeyFromPayload(
+      content,
+      CACHE_SUFFIXES.SOURCE_EVENT
+    );
+
+    // check if there is a corresponding source item
+    // if there isnt then this payload isnt for us
+    const sourceItem = await this._cache.get(sourceItemKey);
+    const parsedSourceItem = JSON.parse(sourceItem);
+    if (!sourceItem) return;
+
+    // store item in cache
+    const existingContent = await this._cache.get(validatedItemsKey);
+    if (!existingContent) {
+      await this._cache.set(validatedItemsKey, JSON.stringify([payload]));
+    } else {
+      const updatedPayload = [payload, ...JSON.parse(existingContent)];
+      await this._cache.set(validatedItemsKey, JSON.stringify(updatedPayload));
+    }
+
+    // validate that the response treshold is met
+    const validatedItems = await this._cache.get(validatedItemsKey);
+    const parsedValidatedData = JSON.parse(validatedItems);
+    const itemCount = parsedValidatedData.length;
+
+    if (itemCount < environment.responseTreshold) return;
+
+    // TODO push to ccamp
+    const { pdcCanister }: { pdcCanister: ProtocolDataCollectionCanister } =
+      this._ccampClient.getCCampCanisters();
+    pdcCanister.manual_publish(
+      JSON.stringify({
+        source: parsedSourceItem,
+        validations: parsedValidatedData,
+      })
+    );
+
+    // clear the cache
+    await this._cache.del(sourceItemKey);
+    await this._cache.del(validatedItemsKey);
   }
 
-  private async _generateCacheKeyFromPayload(payload: LogStorePayloadType) {
-    return `${payload.transactionHash}-${payload.blockHash}-${payload.index}`;
-  }
-
-  private async _signPayload(payload: LogStorePayloadType) {
-    // TODO research how streamr generates signatures for the message
-    return payload;
+  private _generateCacheKeyFromPayload(
+    payload: LogStorePayloadType,
+    source: string
+  ) {
+    return `${source}-${payload.transactionHash}-${payload.blockHash}-${payload.logIndex}`;
   }
 }

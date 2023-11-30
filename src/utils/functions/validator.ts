@@ -1,6 +1,6 @@
-import environment from '@/config/env';
+import environment from "@/config/env";
 
 const IMPORTANT_PARAMETERS = Object.keys(environment);
 
-export const isConfigValid = (environment: Record<string, string>) =>
-	IMPORTANT_PARAMETERS.every((param) => environment[param]);
+export const isConfigValid = (environment: Record<string, string | number>) =>
+  IMPORTANT_PARAMETERS.every((param) => environment[param]);

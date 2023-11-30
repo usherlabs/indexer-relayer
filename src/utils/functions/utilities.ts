@@ -11,6 +11,8 @@ const AbiCoder = require("web3-eth-abi");
  * @returns
  */
 export const formatHexString = (hexString: string) => {
+  if(hexString.startsWith("0x")) return hexString;
+
   const cleanHexString = hexString.replace(/\\x/g, "");
   const byteArray = Buffer.from(cleanHexString, "hex").toString("hex");
   return `0x${byteArray}`;
