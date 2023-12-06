@@ -17,7 +17,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@ccamp/lib": "^1.6.0",
+    "@ccamp/lib": "^1.6.3",
     "@logsn/client": "^0.0.8",
     "dotenv": "^16.3.1",
     "ethers": "^6.8.1",

@@ -27,10 +27,10 @@
   dependencies:
     regenerator-runtime "^0.14.0"
 
-"@ccamp/lib@^1.6.0":
-  version "1.6.0"
-  resolved "https://registry.yarnpkg.com/@ccamp/lib/-/lib-1.6.0.tgz#2bb5736709fec362208b85850dd3e77a7ab34a75"
-  integrity sha512-xMxad58vSFIfizstbjhsHqKDiZSOfPPtCNVjG3gXjItjPurw/gvoywY+WmI6l9AtnWTpRvCTZ41BUOCjblrecg==
+"@ccamp/lib@^1.6.3":
+  version "1.6.3"
+  resolved "https://registry.yarnpkg.com/@ccamp/lib/-/lib-1.6.3.tgz#64529b4ed1931699a95568bad074182b0100aecb"
+  integrity sha512-68tZdh+Rvm4fqwrQ6zR3mEBcEOtmWCUl0ym7b9AX+gZTBEDYbiVdOloDmBCRxOGH+Yrurw/qQ9xLCnNsgxVKkA==
   dependencies:
     "@dfinity/agent" "^0.15.7"
     "@dfinity/assets" "^0.15.7"

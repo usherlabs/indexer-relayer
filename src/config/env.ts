@@ -1,4 +1,7 @@
+import { ENV } from "@ccamp/lib";
+
 const environment = {
+  env: process.env.ENV == ENV.dev ? ENV.dev : ENV.prod,
   postgresConnectionString: process.env.POSTGRES_CONNECTION_URL,
   evmPrivateKey: process.env.EVM_PRIVATE_KEY,
   logstoreStreamId: process.env.LOGSTORE_STREAM_ID,

@@ -12,7 +12,7 @@ import {
   CREATE_TRIGGER_QUERY,
   LISTEN_TO_TRIGGER_QUERY,
 } from "@/utils/queries";
-import CCAMPClient, { ProtocolDataCollectionCanister } from "@ccamp/lib";
+import CCAMPClient, { ENV, ProtocolDataCollectionCanister } from "@ccamp/lib";
 import LogStoreClient, { MessageMetadata } from "@logsn/client";
 import { Client as DBClient, QueryResult } from "pg";
 import { createClient } from "redis";
@@ -23,10 +23,14 @@ export class PostgresHelper {
   public _ccampClient: CCAMPClient;
   private _cache;
 
-  constructor(connectionString: string, evmPrivateKey: string) {
+  constructor(
+    connectionString: string,
+    evmPrivateKey: string,
+    { env } = { env: ENV.prod }
+  ) {
     this._db = new DBClient(connectionString);
     this._cache = createClient();
-    this._ccampClient = new CCAMPClient(evmPrivateKey);
+    this._ccampClient = new CCAMPClient(evmPrivateKey, { env });
     this._logstoreClient = new LogStoreClient({
       auth: { privateKey: evmPrivateKey },
     });
@@ -42,7 +46,7 @@ export class PostgresHelper {
   }
 
   public async listen() {
-    // add notify listeners to relevant 
+    // add notify listeners to relevant
     await this._db.query(CREATE_TRIGGER_QUERY);
     await this._db.query(LISTEN_TO_TRIGGER_QUERY);
 
@@ -157,10 +161,11 @@ export class PostgresHelper {
     // TODO push to ccamp
     const { pdcCanister }: { pdcCanister: ProtocolDataCollectionCanister } =
       this._ccampClient.getCCampCanisters();
-    pdcCanister.manual_publish(
+
+    await pdcCanister.process_event(
       JSON.stringify({
         source: parsedSourceItem,
-        validations: parsedValidatedData,
+        validation: parsedValidatedData,
       })
     );
 
