@@ -30,7 +30,7 @@ The indexer-relayer plays a pivotal role in ensuring the authenticity and integr
 
 Behind this sophisticated process lies the `Client` class, a TypeScript powerhouse. This class, with its intricate orchestration, interfaces seamlessly with PostgreSQL databases, Redis caches, CCAMP and the LogStore for validation of events.
 
-## Getting Started with the code [loom](https://www.loom.com/share/fa0d1fc8e6e44649860ce28640208eff?sid=7d7294a9-d220-4dd1-aaad-b97a37ea2775)
+## Getting Started with the code [loom](https://www.loom.com/share/b80608d87b7b4fcaa3f139fbe05365ce?sid=cab4c2df-eb95-41e7-8422-c6743440b39c)
 
 Initializing the indexer-relayer is a straightforward process:
 
