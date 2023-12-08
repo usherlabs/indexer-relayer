@@ -11,8 +11,7 @@
     "clean": "",
     "dev": "ts-node -r tsconfig-paths/register src/index.ts",
     "build": "ttsc",
-    "start": "npm run build && node ./dist/index.js",
-    "setup": "./setup.sh"
+    "start": "npm run build && node ./dist/index.js"
   },
   "author": "",
   "license": "ISC",
