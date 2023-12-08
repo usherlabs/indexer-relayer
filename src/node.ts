@@ -1,5 +1,5 @@
 import environment from "@/config/env";
-import { PostgresHelper } from "@/lib/client";
+import { Client } from "@/lib/client";
 import { isConfigValid } from "@/utils/functions/validator";
 
 export async function startNode() {
@@ -9,12 +9,12 @@ export async function startNode() {
   const { postgresConnectionString, evmPrivateKey } = environment;
 
   // validate that the connection string was set as an env variable
-  const postgresClient = new PostgresHelper(
+  const client = new Client(
     postgresConnectionString,
     evmPrivateKey,
     { env: environment.env }
   );
 
   // listen for new insertions into the database
-  await postgresClient.listen();
+  await client.listen();
 }
