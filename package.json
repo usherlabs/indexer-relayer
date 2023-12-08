@@ -17,12 +17,13 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@ccamp/lib": "^1.6.3",
+    "@ccamp/lib": "1.9.1",
     "@logsn/client": "^0.0.8",
     "dotenv": "^16.3.1",
     "ethers": "^6.8.1",
     "pg": "^8.11.3",
     "redis": "^4.6.11",
+    "simple-node-logger": "^21.8.12",
     "web3-eth-abi": "^4.1.4"
   },
   "devDependencies": {

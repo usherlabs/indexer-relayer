@@ -16,12 +16,14 @@ import CCAMPClient, { ENV, ProtocolDataCollectionCanister } from "@ccamp/lib";
 import LogStoreClient, { MessageMetadata } from "@logsn/client";
 import { Client as DBClient, QueryResult } from "pg";
 import { createClient } from "redis";
+import logger, { STANDARD_LEVELS } from "simple-node-logger";
 
 export class PostgresHelper {
+  private _cache;
   private _db: DBClient;
   private _logstoreClient: LogStoreClient;
-  public _ccampClient: CCAMPClient;
-  private _cache;
+  public ccampClient: CCAMPClient;
+  public logger: logger.Logger;
 
   constructor(
     connectionString: string,
@@ -30,10 +32,13 @@ export class PostgresHelper {
   ) {
     this._db = new DBClient(connectionString);
     this._cache = createClient();
-    this._ccampClient = new CCAMPClient(evmPrivateKey, { env });
+    this.ccampClient = new CCAMPClient(evmPrivateKey, { env });
     this._logstoreClient = new LogStoreClient({
       auth: { privateKey: evmPrivateKey },
     });
+    this.logger = logger.createSimpleLogger('project.log');
+
+    this.logger.setLevel(environment.logLevel as STANDARD_LEVELS);
 
     // connect to the db and cache
     this._db.connect();
@@ -41,8 +46,7 @@ export class PostgresHelper {
   }
 
   public async log(text: string) {
-    // TODO change to actual logger
-    console.log(text);
+    this.logger.info(text);
   }
 
   public async listen() {
@@ -117,8 +121,8 @@ export class PostgresHelper {
 
       return signedPayload;
     } catch (err) {
-      console.log(`There was an error:${err.message}`);
-      console.log(err);
+      this.log(`There was an error:${err.message}`);
+      this.log(err);
     }
   }
 
@@ -134,6 +138,9 @@ export class PostgresHelper {
     const sourceItemKey = this._generateCacheKeyFromPayload(
       content,
       CACHE_SUFFIXES.SOURCE_EVENT
+    );
+    this.log(
+      `Event:${sourceItemKey} has recieved a validation from the network`
     );
 
     // check if there is a corresponding source item
@@ -157,10 +164,13 @@ export class PostgresHelper {
     const itemCount = parsedValidatedData.length;
 
     if (itemCount < environment.responseTreshold) return;
+    this.log(
+      `Event:${sourceItemKey} has enough validations and would be pushed to the canisters`
+    );
 
     // TODO push to ccamp
     const { pdcCanister }: { pdcCanister: ProtocolDataCollectionCanister } =
-      this._ccampClient.getCCampCanisters();
+      this.ccampClient.getCCampCanisters();
 
     await pdcCanister.process_event(
       JSON.stringify({
@@ -168,10 +178,12 @@ export class PostgresHelper {
         validation: parsedValidatedData,
       })
     );
+    this.log(`Event:${sourceItemKey} succesfully pushed to logstore`);
 
     // clear the cache
     await this._cache.del(sourceItemKey);
     await this._cache.del(validatedItemsKey);
+    this.log(`Cache for Event:${sourceItemKey} succesfully cleared`);
   }
 
   private _generateCacheKeyFromPayload(

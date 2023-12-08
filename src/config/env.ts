@@ -1,5 +1,6 @@
 import { ENV } from "@ccamp/lib";
 
+
 const environment = {
   env: process.env.ENV == ENV.dev ? ENV.dev : ENV.prod,
   postgresConnectionString: process.env.POSTGRES_CONNECTION_URL,
@@ -9,6 +10,7 @@ const environment = {
   chainId: process.env.CHAIN_ID,
   topicStream: "0xeb21022d952e5de09c30bfda9e6352ffa95f67be/topics",
   responseTreshold: 1, //number of required responses before submitting to the ccamp
+  logLevel: process.env.LOG_LEVEL || "info",
 };
 
 export default environment;
