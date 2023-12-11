@@ -18,7 +18,7 @@ import { Client as DBClient, QueryResult } from "pg";
 import { createClient } from "redis";
 import logger, { STANDARD_LEVELS } from "simple-node-logger";
 
-export class PostgresHelper {
+export class Client {
   private _cache;
   private _db: DBClient;
   private _logstoreClient: LogStoreClient;
