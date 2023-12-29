@@ -10,12 +10,14 @@ import { formatHexString, parseEventLog } from "./utilities";
  * @param eventPayload
  * @param transactionReciepts
  */
+// ? once in a while transactionReciepts would be an emtpy array and this call will fail
+// ? need to investigate why this is or to use our own provider to fetch event reciepts ourselves for more stability
 export async function parseTransactionReciept(
   eventPayload: DBEventPayload,
   transactionReciepts: TransactionReceiptParams[]
 ): Promise<LogStorePayloadType> {
+  const blockNumber = eventPayload.block$;
   const lockerContractAddress = environment.contractAddress;
-
   const event = formatPayloadHexFields(eventPayload);
 
   // filter all events that do not come from this address
@@ -23,21 +25,31 @@ export async function parseTransactionReciept(
     (reciept) =>
       reciept.to?.toLowerCase() === lockerContractAddress.toLowerCase()
   );
+  console.log(
+    `There were ${relevantReciepts.length} transactions to the locker contract found in block:${blockNumber} `
+  );
+  if (!relevantReciepts.length) {
+    console.log("UNKNOWN_ERROR: contract transaction not found in block");
+    console.log("debug:payload:", JSON.stringify(eventPayload));
+    console.log("debug:reciepts:", transactionReciepts);
+  }
+
   const [foundReciept] = await relevantReciepts
     .map((reciept) => reciept.logs.map(parseEventLog))
     .flat()
     .filter(Boolean)
     .filter((parsedLog) => {
       const { eventParameters: logsEventPayload } = parsedLog;
-      // make sure all the events parameters match
-      return (
+
+      const isExactRecieptFound =
         logsEventPayload.account?.toLowerCase() ===
           event.account?.toLowerCase() &&
         logsEventPayload.canisterId === event.canister_id &&
         logsEventPayload.amount?.toString() === event.amount?.toString() &&
         logsEventPayload.chain === event.chain &&
-        logsEventPayload.token?.toLowerCase() === event.token?.toLowerCase()
-      );
+        logsEventPayload.token?.toLowerCase() === event.token?.toLowerCase();
+
+      return isExactRecieptFound;
     });
 
   if (!foundReciept)

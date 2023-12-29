@@ -31,12 +31,14 @@ export class Client {
     { env } = { env: ENV.prod }
   ) {
     this._db = new DBClient(connectionString);
-    this._cache = createClient();
+    this._cache = createClient({
+      url: environment.redisConnectionString,
+    });
     this.ccampClient = new CCAMPClient(evmPrivateKey, { env });
     this._logstoreClient = new LogStoreClient({
       auth: { privateKey: evmPrivateKey },
     });
-    this.logger = logger.createSimpleLogger('project.log');
+    this.logger = logger.createSimpleLogger("ccamp.log");
 
     this.logger.setLevel(environment.logLevel as STANDARD_LEVELS);
 
