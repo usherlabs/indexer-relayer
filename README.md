@@ -1,30 +1,30 @@
-# indexer-relayer: Obtain attestations about the validity of EVM events indexed by Graph Node and then propagate it to a destination blockchain like the ICP
+# Usher Labs' Indexer Relayer
 
 ## Purpose
 
-The indexer-relayer plays a pivotal role in ensuring the authenticity and integrity of events originating from a graph node, facilitating their secure integration into the Internet Computer Protocol (ICP) environment. Beyond mere validation, its purpose is to serve as a gatekeeper, validating events before ushering them into the ICP ecosystem via a canister.
+**To obtain attestations about the validity of EVM (Ethereum Virtual Machine) events indexed by the Graph Node, and then propagate these attestations to destination blockchains, such as the Internet Computer Protocol (ICP).**
+
+The Indexer Relayer is designed to operate in a centralized environment and plays a pivotal role in ensuring the authenticity and integrity of events originating from a Graph Node (EVM Indexer). Its primary function is to facilitate the secure integration of these events into blockchain environments, such as the Internet Computer (ICP). While the Indexer Relayer serves as a gatekeeper for validating events before they enter the ICP ecosystem, the responsibility for verifying the validity proofs produced by the Nodes within the Log Store Network rests with the destination blockchains. The current implementation of the Indexer Relayer supports indexing via the Graph Node and sinking into blockchains like the Internet Computer. However, this paradigm is designed to evolve, potentially supporting other indexers and sinking validity proofs into any blockchain capable of verifying ECDSA signed messages.
+
+The Indexer Relayer currently powers blockchain interoperability within the [Cross-Chain Asset Management Protocol](https://github.com/usherlabs/ccamp).
 
 ## Workflow
 
 1. **Database Connection:**
-   - To kickstart the validation process, the indexer-relayer establishes a secure connection with the database instance associated with the operational graph node. This connection serves as the foundational link, providing access to the events that are to be validated as they are inserted into the database by running a query to send a postgres notification when there is a new insert into certain databases and tables..
-
+   The validation process begins with the Indexer Relayer establishing a secure connection with the database of the operational Graph Node. This connection provides access to events for validation as they are inserted into the database, including sending PostgreSQL notifications for new inserts into specific databases and tables.  
 2. **Listening for New Indexes:**
-   - The indexer-relayer assumes an active role by continuously monitoring the graph node for new indexes. This ensures that it stays synchronized with the latest blocks, ready to validate newly indexed events.
-
-3. **Event Validation through LogStore:**
-   - Upon detecting a new index, the indexer-relayer initiates a process for sending the corresponding event to the LogStore for meticulous validation. Here, broker nodes within the LogStore network scrutinize the event, verifying its authenticity and ensuring its compliance with predefined validation criteria.
-
+   The Indexer Relayer continuously monitors the Graph Node for new indexes, ensuring it remains synchronized with the latest blocks and ready to validate newly indexed events.  
+3. **Event Validation through Log Store:**
+   Upon detecting a new index, the Indexer Relayer initiates the process of sending the corresponding event to the Log Store for meticulous validation. Nodes within the Log Store Network scrutinize the event, verifying its authenticity and ensuring it meets predefined validation criteria.  
 4. **Validation Response:**
-   - The LogStore network's broker nodes respond promptly, delivering a validated payload as a testament to the event's legitimacy. This phase serves as a quality assurance checkpoint, confirming that only validated events are going to be sent to the canister for balance update.
-
+   The Log Store Network promptly responds, delivering a validated payload as proof of the event's legitimacy. This phase serves as a quality assurance checkpoint, ensuring that only validated events are sent to the canister for balance updates.  
 5. **Integration with Protocol Data Collection Canister:**
-   - The culmination of the validation process occurs as we get enough validations from the logstore network. When the number of validations recieved surpasses a certain treshold, the source event emitted and the validations would be sent to the protocol data collection canister for the corresponding balance updates using the ccamp SDK which can be used to call the appropriate method for the canister.
+   The validation process culminates when a sufficient number of validations are received from the Log Store Network. When the threshold of validations is surpassed, the source event and validations are sent to the Protocol Data Collection Canister for the corresponding balance updates. This is done using the ccamp SDK, which facilitates calling the appropriate method on the canister.  
 
 ## Running the code
+
 - yarn install
 - npm run start
-
 
 ## Simplifying the Complexity
 
