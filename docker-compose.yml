@@ -7,7 +7,7 @@ services:
     volumes:
       - redis_volume_data:/data
     ports:
-      - 6379:6379
+      - 7399:6379
 
   sidecar:
     container_name: ccamp-sidecar
