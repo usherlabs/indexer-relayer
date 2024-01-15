@@ -6,15 +6,19 @@ services:
     restart: always
     volumes:
       - redis_volume_data:/data
-    ports:
-      - 6379:6379
+    expose:
+      - 6379
 
-  # sidecar:
-  #   container_name: ccamp-sidecar
-  #   restart: always
-  #   build:
-  #     context: ./
-  #     dockerfile: Dockerfile
+  sidecar:
+    container_name: ccamp-sidecar
+    restart: always
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      - redis
 
 volumes:
   redis_volume_data:
