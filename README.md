@@ -40,3 +40,9 @@ const eventValidator = new PostgresHelper(connectionString, evmPrivateKey);
 
 // Start listening for new events
 eventValidator.listen();
+```
+
+## Publications
+
+- [Graph Node powered Blockchain Attestation Oracle](https://forum.thegraph.com/t/introducing-the-indexerrelayer-graph-node-powered-blockchain-attestation-oracle/5153) - Jan 15 2024
+- [Empowering Subgraphs with Verifiable Confirmations](https://forum.thegraph.com/t/empowering-subgraphs-with-verifiable-confirmations/4738) - Nov 1 2023
